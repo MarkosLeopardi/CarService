@@ -1,0 +1,73 @@
+.customer-details {
+  margin-top: 20px;
+  box-shadow: inset 0px 0px 6px rgba(0, 0, 0, 0.5);
+  border-radius: 15px 15px 15px 15px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.CustPic {
+  border-radius: 50%;
+  border-style: solid;
+  border-color: #274549;
+  border-width: 5px;
+  width: 150px;
+  height: 150px;
+  margin-bottom: 40px;
+  margin-top: 20px;
+}
+
+.inputs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  max-width: 800px;
+  width: 100%;
+}
+
+.inputs input {
+  flex: 1 1 45%;
+  min-width: 100px;
+  max-width: 45%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.inputs input:nth-child(odd) {
+  margin-right: 10px;
+}
+
+.inputs input:nth-child(even) {
+  margin-left: 10px;
+}
+
+.car-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 800px;
+  width: 100%;
+}
+
+.carshead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.scrollable {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-shadow: inset 0px 0px 6px rgba(0, 0, 0, 0.5);
+  border-radius: 15px;
+  width: 100%;
+}
