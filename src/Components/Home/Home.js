@@ -5,20 +5,40 @@ import { FaUserEdit } from "react-icons/fa";
 import NewCustomerModal from "./NewCustModal";
 import { Button } from 'reactstrap';
 import { Link } from "react-router-dom";
+import { database, ref, get, child, remove } from '../../firebase';
 
 
 export class Home extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            customers: [
-                { id: 1, name: "John", surname: "Doe", phone: "1234567890", city: "New York", email: "john@example.com", active: true },
-                { id: 2, name: "Jane", surname: "Smith", phone: "0987654321", city: "Los Angeles", email: "jane@example.com", active: false },
-            ],
+            customers: [],
             searchQuery: "",
             isModalOpen: false,
         };
     }
+
+    componentDidMount() {
+        this.fetchCustomers();
+    }
+
+    fetchCustomers = async () => {
+        try {
+            const dbRef = ref(database);
+            const snapshot = await get(child(dbRef, 'customers'));
+            if (snapshot.exists()) {
+                const customersData = Object.keys(snapshot.val()).map(key => ({
+                    id: key,
+                    ...snapshot.val()[key]
+                }));
+                this.setState({ customers: customersData });
+            } else {
+                console.log("No data available");
+            }
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+        }
+    };
 
     getFilteredCustomers = () => {
         const { customers, searchQuery } = this.state;
@@ -31,11 +51,16 @@ export class Home extends Component {
         );
     }
 
-    deleteCustomer = (id) => {
-        this.setState((prevState) => ({
-            customers: prevState.customers.filter(customer => customer.id !== id)
-        }));
-    }
+    deleteCustomer = async (id) => {
+        try {
+            await remove(ref(database, `customers/${id}`));
+            this.setState((prevState) => ({
+                customers: prevState.customers.filter(customer => customer.id !== id)
+            }));
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+        }
+    }  
 
     toggleModal = () => {
         this.setState(prevState => ({
