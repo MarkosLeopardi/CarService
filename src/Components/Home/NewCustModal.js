@@ -21,6 +21,7 @@ const NewCustomerModal = ({ isOpen, toggle }) => {
             console.error('Error saving customer:', error);
         }
     };
+    
     return (
         <Modal isOpen={isOpen} toggle={toggle}>
             <ModalHeader style={{backgroundColor: '#A87676', color: 'white'}}toggle={toggle}>New Customer</ModalHeader>

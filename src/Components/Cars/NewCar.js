@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { database, ref, push, set } from '../../firebase';
+
 
 const NewCar = ({ isOpen, toggle }) => {
     const [plate, setPlate] = useState('');
@@ -10,11 +12,21 @@ const NewCar = ({ isOpen, toggle }) => {
     const [engnum, setEngnum] = useState('');
     const [photo, setPhoto] = useState('');
 
-    const handleSave = () => {
-        const newCar = { plate, brand, year, miles, vin, engnum, photo };
-        // Here you should call a function passed from parent to actually add this customer
-        toggle();
+
+
+    const handleSave = async () => {
+        const newCar = { plate, brand, year, miles, vin, engnum, photo};
+        try {
+            const newCarRef = push(ref(database, 'car'));
+            await set(newCarRef, newCar);
+            toggle();
+        } catch (error) {
+            console.error('Error saving customer:', error);
+        }
     };
+
+
+
 
     return (
         <Modal isOpen={isOpen} toggle={toggle}>

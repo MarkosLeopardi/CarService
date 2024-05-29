@@ -4,18 +4,39 @@ import { Link } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 import { Button } from 'reactstrap';
 import { FaUserEdit } from "react-icons/fa";
+import { database, ref, get, child, remove } from '../../firebase';
+
 
 export class Cars extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            car: [
-                { id: 1, plate: "NKZ1734", brand: "Renault Clio", year: "2008", miles: "178000", vin: "", engnum: "" },
-                { id: 2, plate: "KOH2982", brand: "Citroen C3", year: "2005", miles: "150000", vin: "", engnum: "" },
-            ],
+            car: [],
             searchQuery: ""
         };
     }
+
+    componentDidMount() {
+        this.fetchCustomers();
+    }
+
+    fetchCustomers = async () => {
+        try {
+            const dbRef = ref(database);
+            const snapshot = await get(child(dbRef, 'cars'));
+            if (snapshot.exists()) {
+                const carsData = Object.keys(snapshot.val()).map(key => ({
+                    id: key,
+                    ...snapshot.val()[key]
+                }));
+                this.setState({ cars: carsData });
+            } else {
+                console.log("No data available");
+            }
+        } catch (error) {
+            console.error('Error fetching car:', error);
+        }
+    };
 
     getfilter = () => {
         const { car, searchQuery } = this.state;
