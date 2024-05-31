@@ -8,6 +8,7 @@ import NewCar from '../Cars/NewCar';
 import { useLocation } from "react-router-dom";
 import { database, ref, update, onValue } from '../../firebase';
 
+
 class Customers extends Component {
     constructor(props) {
         super(props);
@@ -18,7 +19,7 @@ class Customers extends Component {
             isModalOpen: false,
         };
     }
-
+    
     toggleModal = () => {
         this.setState(prevState => ({
             isModalOpen: !prevState.isModalOpen
