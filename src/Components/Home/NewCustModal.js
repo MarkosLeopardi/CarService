@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import './Home.css';
 import { database, ref, push, set } from '../../firebase';
@@ -11,12 +11,23 @@ const NewCustomerModal = ({ isOpen, toggle }) => {
     const [pass, setPass] = useState('');
     const [active, setActive] = useState(false);
 
+    useEffect(() => {
+        if (!isOpen) {
+            setName('');
+            setPhone('');
+            setCity('');
+            setEmail('');
+            setPass('');
+            setActive(false);
+        }
+    }, [isOpen]);
+
     const handleSave = async () => {
         const newCustomer = { name, phone, city, email, active };
         try {
             const newCustomerRef = push(ref(database, 'customers'));
             await set(newCustomerRef, newCustomer);
-            toggle(); // This will call the toggle function passed from the Home component
+            toggle(); 
         } catch (error) {
             console.error('Error saving customer:', error);
         }
@@ -78,8 +89,7 @@ const NewCustomerModal = ({ isOpen, toggle }) => {
                 </div>
             </ModalBody>
             <ModalFooter>
-                <Button color="primary" onClick={handleSave}>Save</Button>{' '}
-                <Button color="secondary" onClick={toggle}>Cancel</Button>
+                <Button color="primary" onClick={handleSave}>Save</Button>
             </ModalFooter>
         </Modal>
     );

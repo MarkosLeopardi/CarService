@@ -4,12 +4,13 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from "@mui/material";
 import { Button } from 'reactstrap';
-import './Cars.css'
+import './Cars.css';
 import ComService from "./ComService";
 import NewService from "./NewService";
 import { CiEdit } from "react-icons/ci";
+import { MdDelete } from "react-icons/md";
 import { useLocation } from "react-router-dom";
-import { database, ref, update } from '../../firebase';
+import { database, ref, update, onValue, remove } from '../../firebase';
 
 class CarEdit extends Component {
     constructor(props) {
@@ -19,8 +20,10 @@ class CarEdit extends Component {
             car: location.state.car || {},
             service: [],
             newservice: [],
+            doneservice: [],
             isNewServiceModalOpen: false,
-            isComServiceModalOpen: false
+            isComServiceModalOpen: false,
+            selectedService: null,
         };
     }
 
@@ -30,9 +33,10 @@ class CarEdit extends Component {
         }));
     };
 
-    toggleComServiceModal = () => {
+    toggleComServiceModal = (service) => {
         this.setState(prevState => ({
-            isComServiceModalOpen: !prevState.isComServiceModalOpen
+            isComServiceModalOpen: !prevState.isComServiceModalOpen,
+            selectedService: service || null
         }));
     };
 
@@ -58,8 +62,54 @@ class CarEdit extends Component {
         }
     };
 
+    deleteNextService = async (id) => {
+        try {
+            await remove(ref(database, `nextservice/${id}`));
+            this.setState((prevState) => ({
+                newservice: prevState.newservice.filter(newservice => newservice.id !== id)
+            }));
+        } catch (error) {
+            console.error('Error deleting next service:', error);
+        }
+    }  
+
+    componentDidMount() {
+        this.fetchNextService();
+        this.fetchComSer();
+    }
+
+    fetchNextService = () => {
+        const { car } = this.state;
+        const nextServiceRef = ref(database, 'nextservice');
+        onValue(nextServiceRef, (snapshot) => {
+            const nextServices = [];
+            snapshot.forEach((childSnapshot) => {
+                const serviceData = childSnapshot.val();
+                if (serviceData.carId === car.id) {
+                    nextServices.push({ id: childSnapshot.key, ...serviceData });
+                }
+            });
+            this.setState({ newservice: nextServices });
+        });
+    };
+
+    fetchComSer = () => {
+        const { car } = this.state;
+        const doneServiceRef = ref(database, 'doneservice');
+        onValue(doneServiceRef, (snapshot) => {
+            const doneServices = [];
+            snapshot.forEach((childSnapshot) => {
+                const serviceData = childSnapshot.val();
+                if (serviceData.carId === car.id) {
+                    doneServices.push({ id: childSnapshot.key, ...serviceData });
+                }
+            });
+            this.setState({ service: doneServices });
+        });
+    };
+
     render() {
-        const { car, service, newservice } = this.state;
+        const { car, service, newservice, isComServiceModalOpen, selectedService } = this.state;
 
         return (
             <>
@@ -124,14 +174,14 @@ class CarEdit extends Component {
 
                                 {/* List with all the service done*/}
                                 <div className="servicehead" style={{ width: '500px' }}>
-                                    <h3 style={{ textDecorationLine: "underline", marginBottom: '55px' }}>Service List</h3>
+                                    <h3 style={{ textDecorationLine: "underline", marginBottom: '55px' }}>Done Service</h3>
                                     <div className="scrollable">
                                         <List>
                                             {service.map((service) => (
                                                 <ListItem key={service.id}>
                                                     <ListItemText
-                                                        primary={`${service.id} - ${service.date}`}
-                                                        secondary={`${service.servtype}, ${service.miles}, ${service.comms}`} />
+                                                        primary={`${service.date}`}
+                                                        secondary={`${service.type}, ${service.miles}, ${service.comms}`} />
                                                 </ListItem>
                                             ))}
                                         </List>
@@ -155,15 +205,16 @@ class CarEdit extends Component {
                                             {newservice.map((newservice) => (
                                                 <ListItem key={newservice.id} style={{ display: 'flex' }}>
                                                     <ListItemText
-                                                        primary={`${newservice.id} - ${newservice.date}`}
-                                                        secondary={`${newservice.servtype}, ${newservice.miles}`}
+                                                        primary={`${newservice.date}`}
+                                                        secondary={`${newservice.type}`}
                                                         style={{ width: '85%' }} />
                                                     <ListItemButton
                                                         style={{ backgroundColor: '#007bff', color: 'white' }}
-                                                        onClick={this.toggleComServiceModal}
+                                                        onClick={() => this.toggleComServiceModal(newservice)}
                                                     >
                                                         <CiEdit />
                                                     </ListItemButton>
+                                                    <ListItemButton style={{ backgroundColor:'#007bff', color: 'white'}} onClick={() => this.deleteNextService(newservice.id)}><MdDelete /></ListItemButton>
                                                 </ListItem>
                                             ))}
                                         </List>
@@ -176,8 +227,12 @@ class CarEdit extends Component {
                     </div>
                 </div>
 
-                <ComService isOpen={this.state.isComServiceModalOpen} toggle={this.toggleComServiceModal} />
-                <NewService isOpen={this.state.isNewServiceModalOpen} toggle={this.toggleNewServiceModal} />
+                <ComService
+                    isOpen={isComServiceModalOpen}
+                    toggle={this.toggleComServiceModal}
+                    nextService={selectedService}
+                />
+                <NewService isOpen={this.state.isNewServiceModalOpen} toggle={this.toggleNewServiceModal} carId={car.id}/>
             </>
         );
     }
@@ -187,3 +242,4 @@ export default (props) => {
     const location = useLocation();
     return <CarEdit {...props} location={location} />;
 };
+

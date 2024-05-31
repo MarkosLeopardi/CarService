@@ -1,32 +1,33 @@
 import React, { useState } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { database, ref, push, set } from '../../firebase';
 
-const NewService = ({ isOpen, toggle }) => {
-    const [miles, setPlate] = useState('');
+const NewService = ({ isOpen, toggle, carId }) => {
     const [date, setDate] = useState('');
     const [type, setType] = useState('');
+
     const CalDate = () => {
         const today = new Date();
-        today.setDate(today.getDate() +1);
+        today.setDate(today.getDate() + 1);
         return today.toISOString().split('T')[0];
     };
-    const handleSave = () => {
-        const newCar = { miles, date, type};
-        // Here you should call a function passed from parent to actually add this customer
-        toggle();
+
+    const handleSave = async () => {
+        const newService = { carId, date, type };
+        try {
+            const newServiceRef = push(ref(database, 'nextservice'));
+            await set(newServiceRef, newService);
+            toggle();
+        } catch (error) {
+            console.error('Error saving service:', error);
+        }
     };
 
     return (
         <Modal isOpen={isOpen} toggle={toggle}>
-            <ModalHeader style={{backgroundColor: '#A87676', color: 'white'}} toggle={toggle}>New Service</ModalHeader>
+            <ModalHeader style={{ backgroundColor: '#A87676', color: 'white' }} toggle={toggle}>New Service</ModalHeader>
             <ModalBody>
-                <input
-                    type="text"
-                    placeholder="Mileage"
-                    className="form-control"
-                    value={miles}
-                    onChange={(e) => setPlate(e.target.value)}
-                />
+
                 <input
                     style={{ marginTop: '20px' }}
                     type="date"
@@ -37,16 +38,16 @@ const NewService = ({ isOpen, toggle }) => {
                     min={CalDate()}
                 />
                 <select
-                style={{ marginTop: '20px' }}
-                className="form-control"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-            >
-                <option value="">Big</option>
-                <option value="">Small</option>
-                <option value="">Oils</option>
-                
-            </select>
+                    style={{ marginTop: '20px' }}
+                    className="form-control"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                >
+                    <option value="">Select Type</option>
+                    <option value="Big">Big</option>
+                    <option value="Small">Small</option>
+                    <option value="Oils">Oils</option>
+                </select>
             </ModalBody>
             <ModalFooter>
                 <Button color="primary" onClick={handleSave}>Save</Button>{' '}
