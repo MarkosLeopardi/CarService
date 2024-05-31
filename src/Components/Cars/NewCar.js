@@ -3,6 +3,7 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { database, ref, push, set } from '../../firebase';
 
 
+
 const NewCar = ({ isOpen, toggle }) => {
     const [plate, setPlate] = useState('');
     const [brand, setBrand] = useState('');
@@ -19,6 +20,7 @@ const NewCar = ({ isOpen, toggle }) => {
         try {
             const newCarRef = push(ref(database, 'car'));
             await set(newCarRef, newCar);
+            
             toggle();
         } catch (error) {
             console.error('Error saving customer:', error);

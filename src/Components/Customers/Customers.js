@@ -6,7 +6,7 @@ import { Button } from 'reactstrap';
 import './Customers.css';
 import NewCar from '../Cars/NewCar';
 import { useLocation } from "react-router-dom";
-import { database, ref, update } from '../../firebase';
+import { database, ref, update} from '../../firebase';
 
 class Customers extends Component {
     constructor(props) {
@@ -18,7 +18,7 @@ class Customers extends Component {
             isModalOpen: false,
         };
     }
-
+    
     toggleModal = () => {
         this.setState(prevState => ({
             isModalOpen: !prevState.isModalOpen
