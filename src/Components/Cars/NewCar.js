@@ -3,7 +3,7 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { database, ref, push, set } from '../../firebase';
 
 
-const NewCar = ({ isOpen, toggle }) => {
+const NewCar = ({ isOpen, toggle, customerId }) => {
     const [plate, setPlate] = useState('');
     const [brand, setBrand] = useState('');
     const [year, setYear] = useState('');
@@ -12,10 +12,8 @@ const NewCar = ({ isOpen, toggle }) => {
     const [engnum, setEngnum] = useState('');
     const [photo, setPhoto] = useState('');
 
-
-
     const handleSave = async () => {
-        const newCar = { plate, brand, year, miles, vin, engnum, photo};
+        const newCar = { plate, brand, year, miles, vin, engnum, photo, customerId};
         try {
             const newCarRef = push(ref(database, 'car'));
             await set(newCarRef, newCar);
@@ -24,9 +22,6 @@ const NewCar = ({ isOpen, toggle }) => {
             console.error('Error saving customer:', error);
         }
     };
-
-
-
 
     return (
         <Modal isOpen={isOpen} toggle={toggle}>

@@ -6,7 +6,7 @@ import { Button } from 'reactstrap';
 import './Customers.css';
 import NewCar from '../Cars/NewCar';
 import { useLocation } from "react-router-dom";
-import { database, ref, update } from '../../firebase';
+import { database, ref, update, onValue } from '../../firebase';
 
 class Customers extends Component {
     constructor(props) {
@@ -45,6 +45,25 @@ class Customers extends Component {
             console.error("Error updating customer: ", error);
             alert('Failed to update customer');
         }
+    };
+
+    componentDidMount() {
+        this.fetchCars();
+    }
+
+    fetchCars = () => {
+        const { customer } = this.state;
+        const carsRef = ref(database, 'car');
+        onValue(carsRef, (snapshot) => {
+            const cars = [];
+            snapshot.forEach((childSnapshot) => {
+                const carData = childSnapshot.val();
+                if (carData.customerId === customer.id) {
+                    cars.push({ id: childSnapshot.key, ...carData });
+                }
+            });
+            this.setState({ car: cars });
+        });
     };
 
     render() {
@@ -120,7 +139,7 @@ class Customers extends Component {
                                     {car.map((carItem) => (
                                         <ListItem key={carItem.id}>
                                             <ListItemText
-                                                primary={`${carItem.id} - ${carItem.plate} - ${carItem.brand}`}
+                                                primary={`${carItem.plate} - ${carItem.brand}`}
                                                 secondary={`${carItem.year}, ${carItem.miles}`}
                                             />
                                         </ListItem>
@@ -131,7 +150,7 @@ class Customers extends Component {
                     </div>
                 </div>
 
-                <NewCar isOpen={this.state.isModalOpen} toggle={this.toggleModal} />
+                <NewCar isOpen={this.state.isModalOpen} toggle={this.toggleModal} customerId={customer.id}/>
             </>
         );
     }
