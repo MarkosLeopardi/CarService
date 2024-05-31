@@ -4,11 +4,10 @@ import { MdDelete } from "react-icons/md";
 import { FaUserEdit } from "react-icons/fa";
 import NewCustomerModal from "./NewCustModal";
 import { Button } from 'reactstrap';
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { database, ref, get, child, remove } from '../../firebase';
 
-
-export class Home extends Component {
+class Home extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -62,10 +61,10 @@ export class Home extends Component {
         }
     }  
 
-    toggleModal = () => {
+    toggleModal = (callback) => {
         this.setState(prevState => ({
             isModalOpen: !prevState.isModalOpen
-        }));
+        }), callback);
     };
 
     render() {
@@ -73,7 +72,6 @@ export class Home extends Component {
 
         return (
             <>
-
                 <div className="header-container">
                     <h1 style={{ textDecorationLine: "underline" }}>Select Customer</h1>
                     <input
@@ -83,14 +81,13 @@ export class Home extends Component {
                         value={this.state.searchQuery}
                         onChange={(e) => this.setState({ searchQuery: e.target.value })}
                     />
-                    <Button color="primary" className="newbutton" onClick={this.toggleModal}>New</Button>
+                    <Button color="primary" className="newbutton" onClick={() => this.toggleModal()}>New</Button>
                 </div>
 
                 <table className="table">
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Surname</th>
                             <th>Phone</th>
                             <th>City</th>
                             <th>Email</th>
@@ -101,9 +98,7 @@ export class Home extends Component {
                         {filteredCustomers.length > 0 ? (
                             filteredCustomers.map((customer) => (
                                 <tr key={customer.id}>
-
                                     <td>{customer.name}</td>
-                                    <td>{customer.surname}</td>
                                     <td>{customer.phone}</td>
                                     <td>{customer.city}</td>
                                     <td>{customer.email}</td>
@@ -117,26 +112,30 @@ export class Home extends Component {
                                     </td>
                                     <td>
                                         <Button style={{ backgroundColor:'#007bff'}} onClick={() => this.deleteCustomer(customer.id)}><MdDelete /></Button>
-                                        <Button style={{ marginLeft: '20px',  backgroundColor:'#007bff' }} >
-                                            <Link to={`/Customers`} style={{color: 'white'}}>
-                                                <FaUserEdit />
-                                            </Link>
+                                        <Button style={{ marginLeft: '20px', backgroundColor:'#007bff' }} onClick={() => this.props.navigate('/Customers', { state: { customer } })}>
+                                            <FaUserEdit />
                                         </Button>
                                     </td>
-
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="7">No customers found</td>
+                                <td colSpan="6">No customers found</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
 
-                <NewCustomerModal isOpen={this.state.isModalOpen} toggle={this.toggleModal} />
+                <NewCustomerModal 
+                    isOpen={this.state.isModalOpen} 
+                    toggle={() => this.toggleModal(this.fetchCustomers)} 
+                />
             </>
-
         )
     }
 }
+
+export default (props) => {
+    const navigate = useNavigate();
+    return <Home {...props} navigate={navigate} />;
+};

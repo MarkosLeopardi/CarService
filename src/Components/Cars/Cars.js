@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import './Cars.css';
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 import { Button } from 'reactstrap';
 import { FaUserEdit } from "react-icons/fa";
 import { database, ref, get, child, remove } from '../../firebase';
 
 
-export class Cars extends Component {
+class Cars extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -17,19 +17,19 @@ export class Cars extends Component {
     }
 
     componentDidMount() {
-        this.fetchCustomers();
+        this.fetchCars();
     }
 
-    fetchCustomers = async () => {
+    fetchCars = async () => {
         try {
             const dbRef = ref(database);
-            const snapshot = await get(child(dbRef, 'cars'));
+            const snapshot = await get(child(dbRef, 'car'));
             if (snapshot.exists()) {
                 const carsData = Object.keys(snapshot.val()).map(key => ({
                     id: key,
                     ...snapshot.val()[key]
                 }));
-                this.setState({ cars: carsData });
+                this.setState({ car: carsData });
             } else {
                 console.log("No data available");
             }
@@ -38,7 +38,7 @@ export class Cars extends Component {
         }
     };
 
-    getfilter = () => {
+    getfilterCars = () => {
         const { car, searchQuery } = this.state;
         if (!searchQuery) {
             return car;
@@ -48,16 +48,19 @@ export class Cars extends Component {
         );
     }
 
-    deleteCar = (id) => {
-        this.setState((prevState) => ({
-            car: prevState.car.filter(car => car.id !== id)
-        }));
-    }
-
-
+    deleteCar = async (id) => {
+        try {
+            await remove(ref(database, `car/${id}`));
+            this.setState((prevState) => ({
+                car: prevState.car.filter(car => car.id !== id)
+            }));
+        } catch (error) {
+            console.error('Error deleting car:', error);
+        }
+    }  
 
     render() {
-        const filter = this.getfilter();
+        const filtercars = this.getfilterCars();
 
         return (
             <div>
@@ -83,8 +86,8 @@ export class Cars extends Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {filter.length > 0 ? (
-                            filter.map((car) => (
+                        {filtercars.length > 0 ? (
+                            filtercars.map((car) => (
                                 <tr key={car.id}>
                                     <td>{car.plate}</td>
                                     <td>{car.brand}</td>
@@ -92,17 +95,15 @@ export class Cars extends Component {
                                     <td>{car.miles}</td>
                                     <td>
                                         <Button style={{ backgroundColor:'#007bff'}} onClick={() => this.deleteCar(car.id)}><MdDelete /></Button>
-                                        <Button style={{ marginLeft: '20px',  backgroundColor:'#007bff' }} >
-                                            <Link to={`/Cars/CarEdit`} style={{ color: 'white' }}>
+                                        <Button style={{ marginLeft: '20px',  backgroundColor:'#007bff' }} onClick={() => this.props.navigate('/Cars/CarEdit', { state: { car } })}>
                                                 <FaUserEdit />
-                                            </Link>
                                         </Button>
                                     </td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="5">No customers found</td>
+                                <td colSpan="5">No cars found</td>
                             </tr>
                         )}
                     </tbody>
@@ -114,3 +115,8 @@ export class Cars extends Component {
         )
     }
 }
+
+export default (props) => {
+    const navigate = useNavigate();
+    return <Cars {...props} navigate={navigate} />;
+};

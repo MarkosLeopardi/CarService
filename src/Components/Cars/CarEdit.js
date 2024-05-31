@@ -8,25 +8,19 @@ import './Cars.css'
 import ComService from "./ComService";
 import NewService from "./NewService";
 import { CiEdit } from "react-icons/ci";
+import { useLocation } from "react-router-dom";
+import { database, ref, update } from '../../firebase';
 
-export class CarEdit extends Component {
+class CarEdit extends Component {
     constructor(props) {
         super(props);
+        const location = props.location;
         this.state = {
-            service: [
-                { id: 1, date: "15/08/2020", servtype: "Big", miles: "178000", comms: "Υμαντας Χρονισμου" },
-                { id: 2, date: "12/04/2024", servtype: "Small", miles: "188000", comms: "Air-Condition" },
-                { id: 3, date: "20/01/2024", servtype: "Oils", miles: "178450", comms: "Αλλαγη" },
-                { id: 4, date: "20/01/2024", servtype: "Small", miles: "146466", comms: "Γενικο" },
-                { id: 5, date: "11/05/2024", servtype: "Oils", miles: "134566", comms: "Αλλαγη" }
-            ],
-            newservice: [
-                { id: 1, date: "15/08/2020", servtype: "Big", miles: "178000" },
-                { id: 2, date: "12/04/2024", servtype: "Small", miles: "188000" },
-                { id: 3, date: "20/01/2024", servtype: "Oils", miles: "178450" },
-                { id: 4, date: "20/01/2024", servtype: "Small", miles: "146466" },
-                { id: 5, date: "11/05/2024", servtype: "Oils", miles: "134566" }
-            ]
+            car: location.state.car || {},
+            service: [],
+            newservice: [],
+            isNewServiceModalOpen: false,
+            isComServiceModalOpen: false
         };
     }
 
@@ -42,8 +36,30 @@ export class CarEdit extends Component {
         }));
     };
 
+    handleInputChange = (e) => {
+        const { name, value } = e.target;
+        this.setState({
+            car: {
+                ...this.state.car,
+                [name]: value
+            }
+        });
+    };
+
+    updateCar = async () => {
+        const { car } = this.state;
+        try {
+            const carRef = ref(database, `car/${car.id}`);
+            await update(carRef, car);
+            alert('Car updated successfully');
+        } catch (error) {
+            console.error("Error updating car: ", error);
+            alert('Failed to update car');
+        }
+    };
+
     render() {
-        const { service, newservice } = this.state;
+        const { car, service, newservice } = this.state;
 
         return (
             <>
@@ -52,21 +68,61 @@ export class CarEdit extends Component {
                 </div>
 
                 <div className="car-details">
-                    <img className="carpic" src='/img/carprof.png' />
+                    <img className="carpic" src='/img/carprof.png' alt="Car Profile" />
                     <div className="inputs">
-                        <input type="text" placeholder="License Plate" />
-                        <input type="text" placeholder="Brand & Model" />
-                        <input type="text" placeholder="Year" />
-                        <input type="text" placeholder="Mileage" />
-                        <input type="text" placeholder="Vehicle Identification Number" />
-                        <input type="text" placeholder="Engine Number" />
+                        <input
+                            type="text"
+                            value={car.plate || ''}
+                            placeholder="Plate"
+                            name="plate"
+                            onChange={this.handleInputChange}
+                        />
+                        <input
+                            type="text"
+                            value={car.brand || ''}
+                            placeholder="Brand & Model"
+                            name="brand"
+                            onChange={this.handleInputChange}
+                        />
+                        <input
+                            type="text"
+                            value={car.year || ''}
+                            placeholder="Manufacture Year"
+                            name="year"
+                            onChange={this.handleInputChange}
+                        />
+                        <input
+                            type="text"
+                            value={car.miles || ''}
+                            placeholder="Mileage"
+                            name="miles"
+                            onChange={this.handleInputChange}
+                        />
+                        <input
+                            type="text"
+                            value={car.vin || ''}
+                            placeholder="Vehicle Identification Number"
+                            name="vin"
+                            onChange={this.handleInputChange}
+                        />
+                        <input
+                            type="text"
+                            value={car.engnum || ''}
+                            placeholder="Engine Number"
+                            name="engnum"
+                            onChange={this.handleInputChange}
+                        />
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <Button style={{ backgroundColor: '#007bff', width: '20%', }}>Edit</Button>
+                            <Button
+                                style={{ backgroundColor: '#007bff', width: '20%' }}
+                                onClick={this.updateCar}
+                            >
+                                Edit
+                            </Button>
 
                             <div className="service-list" style={{ display: 'flex', flexDirection: 'row' }}>
 
                                 {/* List with all the service done*/}
-
                                 <div className="servicehead" style={{ width: '500px' }}>
                                     <h3 style={{ textDecorationLine: "underline", marginBottom: '55px' }}>Service List</h3>
                                     <div className="scrollable">
@@ -74,7 +130,7 @@ export class CarEdit extends Component {
                                             {service.map((service) => (
                                                 <ListItem key={service.id}>
                                                     <ListItemText
-                                                        primary={`${service.id} - ${service.date} `}
+                                                        primary={`${service.id} - ${service.date}`}
                                                         secondary={`${service.servtype}, ${service.miles}, ${service.comms}`} />
                                                 </ListItem>
                                             ))}
@@ -86,21 +142,30 @@ export class CarEdit extends Component {
                                 <div className="next-service" style={{ width: '500px', marginLeft: "120px" }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                         <h3 style={{ textDecorationLine: "underline" }}>Next Service</h3>
-                                        <Button style={{ backgroundColor: '#007bff', width: '20%', marginBottom: '10px' }} className="newbutton" onClick={this.toggleNewServiceModal}>New</Button>
+                                        <Button
+                                            style={{ backgroundColor: '#007bff', width: '20%', marginBottom: '10px' }}
+                                            className="newbutton"
+                                            onClick={this.toggleNewServiceModal}
+                                        >
+                                            New
+                                        </Button>
                                     </div>
                                     <div className="scrollable">
                                         <List>
                                             {newservice.map((newservice) => (
-                                                <ListItem key={service.id} style={{ display: 'flex' }}>
+                                                <ListItem key={newservice.id} style={{ display: 'flex' }}>
                                                     <ListItemText
-                                                        primary={`${newservice.id} - ${newservice.date} `}
+                                                        primary={`${newservice.id} - ${newservice.date}`}
                                                         secondary={`${newservice.servtype}, ${newservice.miles}`}
                                                         style={{ width: '85%' }} />
-                                                    <ListItemButton style={{ backgroundColor: '#007bff', color: 'white' }} onClick={this.toggleComServiceModal}><CiEdit /></ListItemButton>
+                                                    <ListItemButton
+                                                        style={{ backgroundColor: '#007bff', color: 'white' }}
+                                                        onClick={this.toggleComServiceModal}
+                                                    >
+                                                        <CiEdit />
+                                                    </ListItemButton>
                                                 </ListItem>
-
                                             ))}
-
                                         </List>
                                     </div>
                                 </div>
@@ -114,6 +179,11 @@ export class CarEdit extends Component {
                 <ComService isOpen={this.state.isComServiceModalOpen} toggle={this.toggleComServiceModal} />
                 <NewService isOpen={this.state.isNewServiceModalOpen} toggle={this.toggleNewServiceModal} />
             </>
-        )
+        );
     }
 }
+
+export default (props) => {
+    const location = useLocation();
+    return <CarEdit {...props} location={location} />;
+};

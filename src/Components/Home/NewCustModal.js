@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import './Home.css';
-import { database, ref, push, set } from '../../firebase'; // Ενημερώθηκε το import
+import { database, ref, push, set } from '../../firebase';
 
 const NewCustomerModal = ({ isOpen, toggle }) => {
     const [name, setName] = useState('');
@@ -16,7 +16,7 @@ const NewCustomerModal = ({ isOpen, toggle }) => {
         try {
             const newCustomerRef = push(ref(database, 'customers'));
             await set(newCustomerRef, newCustomer);
-            toggle();
+            toggle(); // This will call the toggle function passed from the Home component
         } catch (error) {
             console.error('Error saving customer:', error);
         }
@@ -24,7 +24,7 @@ const NewCustomerModal = ({ isOpen, toggle }) => {
     
     return (
         <Modal isOpen={isOpen} toggle={toggle}>
-            <ModalHeader style={{backgroundColor: '#A87676', color: 'white'}}toggle={toggle}>New Customer</ModalHeader>
+            <ModalHeader style={{backgroundColor: '#A87676', color: 'white'}} toggle={toggle}>New Customer</ModalHeader>
             <ModalBody>
                 <input
                     type="text"

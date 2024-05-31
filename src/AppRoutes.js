@@ -1,7 +1,7 @@
-import { Home } from './Components/Home/Home';
-import { Customers } from './Components/Customers/Customers';
-import { Cars } from './Components/Cars/Cars';
-import { CarEdit } from './Components/Cars/CarEdit'
+import Cars from './Components/Cars/Cars';
+import CarEdit from './Components/Cars/CarEdit'
+import Home from './Components/Home/Home';
+import Customers from './Components/Customers/Customers';
 
 const AppRoutes = [
     {
