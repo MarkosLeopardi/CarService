@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import './Home.css';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { database, ref, push, set } from '../../firebase';
 
 const NewCustomerModal = ({ isOpen, toggle }) => {
@@ -24,17 +25,14 @@ const NewCustomerModal = ({ isOpen, toggle }) => {
 
     const handleSave = async () => {
         const newCustomer = { name, phone, city, email, pass, active };
+        const auth = getAuth(); 
         try {
-            const newCustomerRef = push(ref(database, 'customers'));
-            await set(newCustomerRef, newCustomer);
 
-            await fetch('http://localhost:3001/send-email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, name, pass })
-            });
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
+
+            const newCustomerRef = push(ref(database, 'customers'));
+            await set(newCustomerRef, { ...newCustomer, uid: user.uid });
 
             toggle(); 
         } catch (error) {
