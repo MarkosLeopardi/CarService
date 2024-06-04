@@ -23,8 +23,7 @@ class MainActivity : AppCompatActivity() {
 
         log = findViewById(R.id.login)
         log.setOnClickListener{
-            val intent = Intent(this@MainActivity, CustomerActivity::class.java)
-            startActivity(intent)
+            // Edw anoiga to epomeno screen
         }
 
     }

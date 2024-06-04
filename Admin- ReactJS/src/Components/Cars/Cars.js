@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 import { Button } from 'reactstrap';
 import { FaUserEdit } from "react-icons/fa";
-import { database, ref, get, child, remove } from '../../firebase';
+import { database, ref, get, child, remove, equalTo, query, orderByChild } from '../../firebase';
 
 
 class Cars extends Component {
@@ -20,6 +20,7 @@ class Cars extends Component {
         this.fetchCars();
     }
 
+    // Gemizei tin lista
     fetchCars = async () => {
         try {
             const dbRef = ref(database);
@@ -37,7 +38,8 @@ class Cars extends Component {
             console.error('Error fetching car:', error);
         }
     };
-
+    
+    // Filtrarei tin lista oso grafeis
     getfilterCars = () => {
         const { car, searchQuery } = this.state;
         if (!searchQuery) {
@@ -48,9 +50,29 @@ class Cars extends Component {
         );
     }
 
+    // Diagrafei ta entries apo tin firebase me to perasemno customerid
     deleteCar = async (id) => {
         try {
             await remove(ref(database, `car/${id}`));
+
+             const nextserviceQuery = query(ref(database, 'nextservice'), orderByChild('carId'), equalTo(id));
+             const nextserviceSnapshot = await get(nextserviceQuery);
+             if (nextserviceSnapshot.exists()) {
+                 const nextserviceEntries = nextserviceSnapshot.val();
+                 for (const serviceId in nextserviceEntries) {
+                     await remove(ref(database, `nextservice/${serviceId}`));
+                 }
+             }
+
+             const doneserviceQuery = query(ref(database, 'doneservice'), orderByChild('carId'), equalTo(id));
+             const doneserviceSnapshot = await get(doneserviceQuery);
+             if (doneserviceSnapshot.exists()) {
+                 const doneserviceEntries = doneserviceSnapshot.val();
+                 for (const serviceId in doneserviceEntries) {
+                     await remove(ref(database, `doneservice/${serviceId}`));
+                 }
+             }
+
             this.setState((prevState) => ({
                 car: prevState.car.filter(car => car.id !== id)
             }));

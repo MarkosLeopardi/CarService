@@ -5,7 +5,7 @@ import { FaUserEdit } from "react-icons/fa";
 import NewCustomerModal from "./NewCustModal";
 import { Button } from 'reactstrap';
 import { useNavigate } from "react-router-dom";
-import { database, ref, get, child, remove } from '../../firebase';
+import { database, ref, get, child, remove, query, orderByChild, equalTo } from '../../firebase';
 
 class Home extends Component {
     constructor(props) {
@@ -21,6 +21,7 @@ class Home extends Component {
         this.fetchCustomers();
     }
 
+    // Gemizei tin lista
     fetchCustomers = async () => {
         try {
             const dbRef = ref(database);
@@ -39,6 +40,7 @@ class Home extends Component {
         }
     };
 
+    // Filtrarei tin lista oso grafeis
     getFilteredCustomers = () => {
         const { customers, searchQuery } = this.state;
         if (!searchQuery) {
@@ -50,17 +52,48 @@ class Home extends Component {
         );
     }
 
+    // Diagrafei ta entries apo tin firebase me to perasemno customerid
     deleteCustomer = async (id) => {
         try {
+            
             await remove(ref(database, `customers/${id}`));
+    
+            const carsQuery = query(ref(database, 'car'), orderByChild('customerId'), equalTo(id));
+            const carsSnapshot = await get(carsQuery);
+            if (carsSnapshot.exists()) {
+                const cars = carsSnapshot.val();
+                for (const carId in cars) {
+                    await remove(ref(database, `car/${carId}`));
+
+                    const nextserviceQuery = query(ref(database, 'nextservice'), orderByChild('carId'), equalTo(carId));
+                    const nextserviceSnapshot = await get(nextserviceQuery);
+                    if (nextserviceSnapshot.exists()) {
+                        const nextserviceEntries = nextserviceSnapshot.val();
+                        for (const serviceId in nextserviceEntries) {
+                            await remove(ref(database, `nextservice/${serviceId}`));
+                        }
+                    }
+
+                    const doneserviceQuery = query(ref(database, 'doneservice'), orderByChild('carId'), equalTo(carId));
+                    const doneserviceSnapshot = await get(doneserviceQuery);
+                    if (doneserviceSnapshot.exists()) {
+                        const doneserviceEntries = doneserviceSnapshot.val();
+                        for (const serviceId in doneserviceEntries) {
+                            await remove(ref(database, `doneservice/${serviceId}`));
+                        }
+                    }
+                }
+            }
+
             this.setState((prevState) => ({
                 customers: prevState.customers.filter(customer => customer.id !== id)
             }));
         } catch (error) {
             console.error('Error deleting customer:', error);
         }
-    }  
+    };
 
+    // Anoigei to Modal
     toggleModal = (callback) => {
         this.setState(prevState => ({
             isModalOpen: !prevState.isModalOpen
@@ -111,8 +144,8 @@ class Home extends Component {
                                         />
                                     </td>
                                     <td>
-                                        <Button style={{ backgroundColor:'#007bff'}} onClick={() => this.deleteCustomer(customer.id)}><MdDelete /></Button>
-                                        <Button style={{ marginLeft: '20px', backgroundColor:'#007bff' }} onClick={() => this.props.navigate('/Customers', { state: { customer } })}>
+                                        <Button style={{ backgroundColor: '#007bff' }} onClick={() => this.deleteCustomer(customer.id)}><MdDelete /></Button>
+                                        <Button style={{ marginLeft: '20px', backgroundColor: '#007bff' }} onClick={() => this.props.navigate('/Customers', { state: { customer } })}>
                                             <FaUserEdit />
                                         </Button>
                                     </td>
@@ -126,9 +159,9 @@ class Home extends Component {
                     </tbody>
                 </table>
 
-                <NewCustomerModal 
-                    isOpen={this.state.isModalOpen} 
-                    toggle={() => this.toggleModal(this.fetchCustomers)} 
+                <NewCustomerModal
+                    isOpen={this.state.isModalOpen}
+                    toggle={() => this.toggleModal(this.fetchCustomers)}
                 />
             </>
         )
