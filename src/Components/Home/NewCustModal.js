@@ -23,10 +23,19 @@ const NewCustomerModal = ({ isOpen, toggle }) => {
     }, [isOpen]);
 
     const handleSave = async () => {
-        const newCustomer = { name, phone, city, email, active };
+        const newCustomer = { name, phone, city, email, pass, active };
         try {
             const newCustomerRef = push(ref(database, 'customers'));
             await set(newCustomerRef, newCustomer);
+
+            await fetch('http://localhost:3001/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, name, pass })
+            });
+
             toggle(); 
         } catch (error) {
             console.error('Error saving customer:', error);
