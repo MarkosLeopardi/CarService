@@ -43,7 +43,6 @@ const NewService = ({ isOpen, toggle, carId }) => {
                     value={type}
                     onChange={(e) => setType(e.target.value)}
                 >
-                    <option value="">Select Type</option>
                     <option value="Big">Big</option>
                     <option value="Small">Small</option>
                     <option value="Oils">Oils</option>
