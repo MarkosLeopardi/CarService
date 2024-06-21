@@ -7,7 +7,7 @@ import { Button } from 'reactstrap';
 import './Cars.css';
 import ComService from "./ComService";
 import NewService from "./NewService";
-import { CiEdit } from "react-icons/ci";
+import { FaCheck } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { useLocation } from "react-router-dom";
 import { database, ref, update, onValue, remove } from '../../firebase';
@@ -126,6 +126,7 @@ class CarEdit extends Component {
                             placeholder="Plate"
                             name="plate"
                             onChange={this.handleInputChange}
+                            readOnly
                         />
                         <input
                             type="text"
@@ -212,7 +213,7 @@ class CarEdit extends Component {
                                                         style={{ backgroundColor: '#007bff', color: 'white' }}
                                                         onClick={() => this.toggleComServiceModal(newservice)}
                                                     >
-                                                        <CiEdit />
+                                                        <FaCheck />
                                                     </ListItemButton>
                                                     <ListItemButton style={{ backgroundColor:'#007bff', color: 'white'}} onClick={() => this.deleteNextService(newservice.id)}><MdDelete /></ListItemButton>
                                                 </ListItem>

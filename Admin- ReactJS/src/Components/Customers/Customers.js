@@ -97,7 +97,7 @@ class Customers extends Component {
                             name="email"
                             placeholder="Email"
                             value={customer.email || ''}
-                            onChange={this.handleInputChange}
+                            readOnly
                         />
                         <input
                             type="text"
