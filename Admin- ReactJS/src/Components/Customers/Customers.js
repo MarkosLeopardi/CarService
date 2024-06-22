@@ -42,6 +42,7 @@ class Customers extends Component {
         try {
             const customerRef = ref(database, `customers/${customer.id}`);
             await update(customerRef, customer);
+            window.location.reload();
         } catch (error) {
             console.error("Error updating customer: ", error);
             alert('Failed to update customer');

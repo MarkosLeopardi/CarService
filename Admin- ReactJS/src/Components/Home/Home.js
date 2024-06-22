@@ -85,11 +85,10 @@ class Home extends Component {
                 }
             }
 
-            this.setState((prevState) => ({
-                customers: prevState.customers.filter(customer => customer.id !== id)
-            }));
+            window.location.reload();
         } catch (error) {
             console.error('Error deleting customer:', error);
+            window.location.reload();
         }
     };
 

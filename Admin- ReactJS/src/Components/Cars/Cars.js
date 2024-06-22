@@ -73,11 +73,10 @@ class Cars extends Component {
                  }
              }
 
-            this.setState((prevState) => ({
-                car: prevState.car.filter(car => car.id !== id)
-            }));
+             window.location.reload();
         } catch (error) {
             console.error('Error deleting car:', error);
+            window.location.reload();
         }
     }  
 
