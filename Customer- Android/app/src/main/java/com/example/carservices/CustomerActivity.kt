@@ -107,6 +107,8 @@ class CustomerActivity : AppCompatActivity() {
 
                 list.setOnItemClickListener { _, _, position, _ ->
                     val selectedPlate = platesList[position]
+                    doneserviceList.clear()
+                    nextserviceList.clear()
                     search.setText(selectedPlate)
                     showServiceList(carId)
                     dialog.dismiss()
